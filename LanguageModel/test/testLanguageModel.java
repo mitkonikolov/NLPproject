@@ -13,18 +13,19 @@ public class testLanguageModel {
         LanguageModel lm = new LanguageModel();
 
         lm.parse();
+        lm.calcProbs();
 
         HashMap<String, Integer> uniCount = lm.getUnigramCount();
 
         Iterator<String> iter = uniCount.keySet().iterator();
         String w;
 
-        HashMap<String, HashMap<String, Integer>> bigramCount = lm.getTrigramCount();
+        HashMap<String, HashMap<String, Double>> bigramCount = lm.getTagProbs();
 
         iter = bigramCount.keySet().iterator();
         Iterator<String> innerIter;
 
-        HashMap<String, Integer> wordsAfter;
+        HashMap<String, Double> wordsAfter;
         while(iter.hasNext()) {
             w = iter.next();
             System.out.println(w);
@@ -45,5 +46,19 @@ public class testLanguageModel {
             System.out.println("\n\n");
 
         }
+
+
+
+
+
+
+/*        HashMap<String, Double> uniProb = lm.getUnigProb();
+
+        iter = uniProb.keySet().iterator();
+
+        while(iter.hasNext()) {
+            w = iter.next();
+            System.out.println(uniProb.get(w));
+        }*/
     }
 }

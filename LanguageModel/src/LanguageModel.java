@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by Mitko on 10/18/17.
@@ -18,12 +15,22 @@ public class LanguageModel {
     // map for POS tags
     HashMap<String, HashMap<String, Integer>> posTags;
 
+    HashMap<String, Double> unigramProbs;
+    HashMap<String, HashMap<String,Double>> bigramProbs;
+    HashMap<String, HashMap<String, Double>> trigramProbs;
+    HashMap<String, HashMap<String, Double>> tagProbs;
+
 
     public LanguageModel() {
         this.unigramCount = new HashMap<>();
         this.bigramCount = new HashMap<>();
         this.trigramCount = new HashMap<>();
         this.posTags = new HashMap<>();
+
+        this.unigramProbs = new HashMap<>();
+        this.bigramProbs = new HashMap<>();
+        this.trigramProbs = new HashMap<>();
+        this.tagProbs = new HashMap<>();
     }
 
     public void parse() {
@@ -151,6 +158,106 @@ public class LanguageModel {
         wordAfter.put(word, value);
     }
 
+    public void calcProbs() {
+        calcUniProbs();
+        /*calcOtherProbs(2);
+        calcOtherProbs(3);
+        calcOtherProbs(4);*/
+        calcBigProbs(2);
+        calcBigProbs(3);
+        calcBigProbs(4);
+    }
+
+    private void calcUniProbs() {
+        Iterator<String> iter = this.unigramCount.keySet().iterator();
+        int totalWords = 0;
+        String word;
+        int occurences;
+
+        while(iter.hasNext()) {
+            totalWords += this.unigramCount.get(iter.next());
+        }
+
+        iter = this.unigramCount.keySet().iterator();
+        while(iter.hasNext()) {
+            word = iter.next();
+            occurences = this.unigramCount.get(word);
+            double prob = ((double) occurences) / totalWords;
+            this.unigramProbs.put(word, prob);
+        }
+    }
+
+    private void calcBigProbs(int choice) {
+        HashMap<String, HashMap<String, Integer>> countMap;
+        HashMap<String, HashMap<String, Double>> probMap;
+        switch(choice) {
+            case 2:
+                countMap = this.bigramCount;
+                probMap = this.bigramProbs;
+                break;
+            case 3:
+                countMap = this.trigramCount;
+                probMap = this.trigramProbs;
+                break;
+            case 4:
+                countMap = this.posTags;
+                probMap = this.tagProbs;
+                break;
+            default:
+                countMap = new HashMap<>();
+                probMap = new HashMap<>();
+                System.out.println("calcBigProbs is being used with wrong choice");
+                throw new InputMismatchException("choice is incorrect");
+
+        }
+
+        Iterator<String> iter = countMap.keySet().iterator();
+        Iterator<String> innerIter;
+        String wordBefore;
+        HashMap<String, Integer> wordsAfter;
+        String wordAft;
+        int totalOccurences;
+        int currOccurences;
+        HashMap<String, Double> probInnerMap;
+
+        while(iter.hasNext()) {
+            probInnerMap = new HashMap<>();
+            totalOccurences = 0;
+            wordBefore = iter.next();
+            wordsAfter = countMap.get(wordBefore);
+
+            innerIter = wordsAfter.keySet().iterator();
+            while(innerIter.hasNext()) {
+                wordAft = innerIter.next();
+                totalOccurences += wordsAfter.get(wordAft);
+            }
+
+            innerIter = wordsAfter.keySet().iterator();
+            while(innerIter.hasNext()) {
+                wordAft = innerIter.next();
+                currOccurences = wordsAfter.get(wordAft);
+                double prob = ((double)currOccurences)/totalOccurences;
+                probInnerMap.put(wordAft, prob);
+            }
+
+            probMap.put(wordBefore, probInnerMap);
+        }
+    }
+
+/*    private void calcOtherProbs(int choice) {
+        Iterator<String> iter;
+
+        switch(choice) {
+            case 2:
+                iter = this.bigramCount.keySet().iterator();
+            case 3:
+                iter = this.trigramCount.keySet().iterator();
+            case 4:
+
+
+        }
+    }*/
+
 
     public HashMap<String, Integer> getUnigramCount() {
         return this.unigramCount;
@@ -168,6 +275,21 @@ public class LanguageModel {
         return this.posTags;
     }
 
+    public HashMap<String, Double> getUnigProb() {
+        return this.unigramProbs;
+    }
+
+    public HashMap<String, HashMap<String, Double>> getBigramProbs() {
+        return this.bigramProbs;
+    }
+
+    public HashMap<String, HashMap<String, Double>> getTrigramProbs() {
+        return this.trigramProbs;
+    }
+
+    public HashMap<String, HashMap<String, Double>> getTagProbs() {
+        return this.tagProbs;
+    }
 
 
 }
