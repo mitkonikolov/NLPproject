@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -27,17 +28,19 @@ public class LanguageModel {
 
     public void parse() {
         try {
-            File f = new File("./src/ca00");
+            File f = new File("./src/ca011");
             Scanner s = new Scanner(f);
             Scanner s2;
 
             String sentence;
             String word, posTag;
-            String previousWord = "<s>";
-            String previousTwoWords = "<s> <s>";
+            String previousWord;
+            String previousTwoWords;
 
 
             while(s.hasNextLine()) {
+                previousWord = "<s>";
+                previousTwoWords = "<s> <s>";
                 sentence = s.nextLine();
 
                 if(sentence.length()!=0) {
@@ -64,6 +67,9 @@ public class LanguageModel {
                             updateNGram("", secondWord, 0);
                             updateNGram(firstWord, secondWord, 1);
                             updateNGram(previousWord + " " + firstWord, secondWord, 2);
+
+                            previousTwoWords = previousWord + " " + secondWord;
+                            previousWord = secondWord;
                         }
                         else {
                             // updateUnigram
@@ -74,13 +80,10 @@ public class LanguageModel {
                             updateNGram(previousTwoWords, word, 2);
                             // updatePOS
                             updateNGram(word, posTag, 3);
+
+                            previousTwoWords = previousWord + " " + word;
+                            previousWord = word;
                         }
-
-
-                        previousTwoWords = previousWord + " " + word;
-                        previousWord = word;
-
-
                     }
                 }
 
@@ -95,6 +98,8 @@ public class LanguageModel {
     private void updateNGram (String previous, String word, int mapUpdate) {
         Integer value;
         HashMap<String, Integer> wordAfter;
+
+        Iterator<String> iter;
         switch (mapUpdate) {
             case 0:
                 value = this.unigramCount.get(word);
@@ -105,18 +110,27 @@ public class LanguageModel {
                 break;
             case 1:
                 wordAfter = this.bigramCount.get(previous);
+                if(wordAfter==null) {
+                    wordAfter = new HashMap<>();
+                }
                 updateInnerMap(wordAfter, word);
                 this.bigramCount.put(previous, wordAfter);
                 break;
             case 2:
                 wordAfter = this.trigramCount.get(previous);
+                if(wordAfter==null) {
+                    wordAfter = new HashMap<>();
+                }
                 updateInnerMap(wordAfter, word);
                 this.trigramCount.put(previous, wordAfter);
                 break;
             default:
                 wordAfter = this.posTags.get(previous);
+                if(wordAfter==null) {
+                    wordAfter = new HashMap<>();
+                }
                 updateInnerMap(wordAfter, word);
-                this.trigramCount.put(previous, wordAfter);
+                this.posTags.put(previous, wordAfter);
         }
     }
 
@@ -140,6 +154,18 @@ public class LanguageModel {
 
     public HashMap<String, Integer> getUnigramCount() {
         return this.unigramCount;
+    }
+
+    public HashMap<String, HashMap<String, Integer>> getBigramCount() {
+        return this.bigramCount;
+    }
+
+    public HashMap<String, HashMap<String, Integer>> getTrigramCount() {
+        return this.trigramCount;
+    }
+
+    public HashMap<String, HashMap<String, Integer>> getPosTags() {
+        return this.posTags;
     }
 
 
