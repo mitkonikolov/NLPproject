@@ -28,7 +28,7 @@ public class LanguageModel {
 
     public void parse() {
         try {
-            File f = new File("./src/ca011");
+            File f = new File("./src/ca00");
             Scanner s = new Scanner(f);
             Scanner s2;
 
@@ -68,7 +68,7 @@ public class LanguageModel {
                             updateNGram(firstWord, secondWord, 1);
                             updateNGram(previousWord + " " + firstWord, secondWord, 2);
 
-                            previousTwoWords = previousWord + " " + secondWord;
+                            previousTwoWords = firstWord + " " + secondWord;
                             previousWord = secondWord;
                         }
                         else {
