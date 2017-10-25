@@ -20,7 +20,7 @@ public class testLanguageModel {
         Iterator<String> iter = uniCount.keySet().iterator();
         String w;
 
-        HashMap<String, HashMap<String, Double>> bigramCount = lm.getTagProbs();
+        HashMap<String, HashMap<String, Double>> bigramCount = lm.getTrigramProbs();
 
         iter = bigramCount.keySet().iterator();
         Iterator<String> innerIter;

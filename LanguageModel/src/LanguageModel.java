@@ -35,7 +35,7 @@ public class LanguageModel {
 
     public void parse() {
         try {
-            File f = new File("./src/ca00");
+            File f = new File("./src/ca011");
             Scanner s = new Scanner(f);
             Scanner s2;
 
@@ -160,12 +160,9 @@ public class LanguageModel {
 
     public void calcProbs() {
         calcUniProbs();
-        /*calcOtherProbs(2);
+        calcOtherProbs(2);
         calcOtherProbs(3);
-        calcOtherProbs(4);*/
-        calcBigProbs(2);
-        calcBigProbs(3);
-        calcBigProbs(4);
+        calcOtherProbs(4);
     }
 
     private void calcUniProbs() {
@@ -187,7 +184,7 @@ public class LanguageModel {
         }
     }
 
-    private void calcBigProbs(int choice) {
+    private void calcOtherProbs(int choice) {
         HashMap<String, HashMap<String, Integer>> countMap;
         HashMap<String, HashMap<String, Double>> probMap;
         switch(choice) {
@@ -204,9 +201,6 @@ public class LanguageModel {
                 probMap = this.tagProbs;
                 break;
             default:
-                countMap = new HashMap<>();
-                probMap = new HashMap<>();
-                System.out.println("calcBigProbs is being used with wrong choice");
                 throw new InputMismatchException("choice is incorrect");
 
         }
@@ -243,20 +237,6 @@ public class LanguageModel {
             probMap.put(wordBefore, probInnerMap);
         }
     }
-
-/*    private void calcOtherProbs(int choice) {
-        Iterator<String> iter;
-
-        switch(choice) {
-            case 2:
-                iter = this.bigramCount.keySet().iterator();
-            case 3:
-                iter = this.trigramCount.keySet().iterator();
-            case 4:
-
-
-        }
-    }*/
 
 
     public HashMap<String, Integer> getUnigramCount() {
