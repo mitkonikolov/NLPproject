@@ -1,6 +1,9 @@
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.*;
+import java.io.FilenameFilter;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Iterator;
+import java.util.Scanner;
 
 /**
  * Created by Mitko on 10/18/17.
@@ -33,75 +36,98 @@ public class LanguageModel {
         this.tagProbs = new HashMap<>();
     }
 
+
+    /**
+     * Parses the input files and updates all count maps.
+     */
     public void parse() {
         try {
-            File f = new File("./src/ca011");
-            Scanner s = new Scanner(f);
-            Scanner s2;
+            File filesDir = new File("../brown corpus/brown");
+            // ignore hidden files
+            FilenameFilter fileFilter = (dir, name) -> {
+                Character firstChar = name.charAt(0);
+                return !firstChar.equals('.');
+            };
+            File[] allFiles = filesDir.listFiles(fileFilter);
 
-            String sentence;
-            String word, posTag;
-            String previousWord;
-            String previousTwoWords;
+            for(int i = 0; i < allFiles.length; i++) {
+                Scanner s = new Scanner(allFiles[i]);
+                Scanner s2;
+
+                String sentence;
+                String word, posTag;
+                String previousWord;
+                String previousTwoWords;
 
 
-            while(s.hasNextLine()) {
-                previousWord = "<s>";
-                previousTwoWords = "<s> <s>";
-                sentence = s.nextLine();
+                while (s.hasNextLine()) {
+                    previousWord = "<s>";
+                    previousTwoWords = "<s> <s>";
+                    sentence = s.nextLine();
 
-                if(sentence.length()!=0) {
+                    if (sentence.length() != 0) {
 
-                    s2 = new Scanner(sentence);
+                        s2 = new Scanner(sentence);
 
-                    while(s2.hasNext()) {
-                        String[] words = s2.next().split("/");
+                        while (s2.hasNext()) {
+                            String[] words = s2.next().split("/");
 
-                        word = words[0].toLowerCase();
-                        posTag = words[1];
+                            word = words[0].toLowerCase();
+                            posTag = words[1];
 
-                        if(word.contains("'") && word.length()>2) {
-                            int ind = word.indexOf("'");
-                            String firstWord = word.substring(0, ind);
-                            String secondWord = word.substring(ind);
+                            // the word contains an apostrophe and needs to be
+                            // parsed in a special way
+                            if (word.contains("'") && word.length() > 2) {
+                                int ind = word.indexOf("'");
+                                String firstWord = word.substring(0, ind);
+                                String secondWord = word.substring(ind);
 
-                            updateNGram("", firstWord, 0);
-                            updateNGram(previousWord, firstWord, 1);
-                            updateNGram(previousTwoWords, firstWord, 2);
-                            updateNGram(word, posTag, 3);
+                                updateNGram("", firstWord, 0);
+                                updateNGram(previousWord, firstWord, 1);
+                                updateNGram(previousTwoWords, firstWord, 2);
+                                updateNGram(word, posTag, 3);
 
-                            // secondWord is "'s"
-                            updateNGram("", secondWord, 0);
-                            updateNGram(firstWord, secondWord, 1);
-                            updateNGram(previousWord + " " + firstWord, secondWord, 2);
+                                // secondWord is "'s"
+                                updateNGram("", secondWord, 0);
+                                updateNGram(firstWord, secondWord, 1);
+                                updateNGram(previousWord + " " + firstWord, secondWord, 2);
 
-                            previousTwoWords = firstWord + " " + secondWord;
-                            previousWord = secondWord;
-                        }
-                        else {
-                            // updateUnigram
-                            updateNGram("", word, 0);
-                            // updateBigram
-                            updateNGram(previousWord, word, 1);
-                            // updateTrigram
-                            updateNGram(previousTwoWords, word, 2);
-                            // updatePOS
-                            updateNGram(word, posTag, 3);
+                                previousTwoWords = firstWord + " " + secondWord;
+                                previousWord = secondWord;
+                            }
+                            // the words does not contain an apostrophe so the maps
+                            // can directly be updated
+                            else {
+                                // updateUnigram
+                                updateNGram("", word, 0);
+                                // updateBigram
+                                updateNGram(previousWord, word, 1);
+                                // updateTrigram
+                                updateNGram(previousTwoWords, word, 2);
+                                // updatePOS
+                                updateNGram(word, posTag, 3);
 
-                            previousTwoWords = previousWord + " " + word;
-                            previousWord = word;
+                                previousTwoWords = previousWord + " " + word;
+                                previousWord = word;
+                            }
                         }
                     }
-                }
 
+                }
             }
         }
-        catch (FileNotFoundException e) {
-            System.out.println("file was not found");
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
 
+    /**
+     * Updates the count maps' values for previous -> word by 1.
+     * @param previous the expression before {@param word}
+     * @param word {@code String} after {@param previous}
+     * @param mapUpdate indicates which map needs to be updated
+     */
     private void updateNGram (String previous, String word, int mapUpdate) {
         Integer value;
         HashMap<String, Integer> wordAfter;
@@ -142,6 +168,15 @@ public class LanguageModel {
     }
 
 
+    /**
+     * Increments by 1 the number in {@param wordAfter} associated with
+     * {@param word}.
+     *
+     * @param wordAfter {@code HashMap} of numbers and strings that needs to
+     *                                 be updated
+     * @param word {@code String} whose associated number in {@param wordAfter}
+     *                           needs to be incremented
+     */
     private void updateInnerMap(HashMap<String, Integer> wordAfter, String word) {
         Integer value;
 
@@ -154,10 +189,14 @@ public class LanguageModel {
             value = 0;
         }
         value += 1;
-е
         wordAfter.put(word, value);
     }
 
+
+    /**
+     * Invokes methods to update the probability for unigrams, bigrams,
+     * trigrams and pos tags.
+     */
     public void calcProbs() {
         calcUniProbs();
         calcOtherProbs(2);
@@ -165,6 +204,11 @@ public class LanguageModel {
         calcOtherProbs(4);
     }
 
+
+    /**
+     * Calculates the unigram probabilities for all the words
+     * that were seen and stores them in this.unigramProbs.
+     */
     private void calcUniProbs() {
         Iterator<String> iter = this.unigramCount.keySet().iterator();
         int totalWords = 0;
@@ -184,6 +228,15 @@ public class LanguageModel {
         }
     }
 
+
+    /**
+     * Identifies whether the bigram, trigram or pos probabilities need
+     * to be calculated based on {@param choice} and then passes references
+     * to the maps to the helper {@code calcOthProbsHelper} for it to calculate
+     * the values.
+     *
+     * @param choice
+     */
     private void calcOtherProbs(int choice) {
         HashMap<String, HashMap<String, Integer>> countMap;
         HashMap<String, HashMap<String, Double>> probMap;
@@ -205,6 +258,24 @@ public class LanguageModel {
 
         }
 
+        calcOthProbsHelper(countMap, probMap);
+    }
+
+
+    /**
+     * Given a {@param countMap} it retrieves how many times is the word Y
+     * seen after the expression X and then calculates this number by the total
+     * number of times X has been seen. Then it puts this probability into
+     * {@param probMap} as X -> (Y -> probability).
+     *
+     * @param countMap contains the number of times a word has been seen
+     *                 after some expression
+     * @param probMap contains the probability for each word/tag seen after
+     *                each expression
+     */
+    private void calcOthProbsHelper(HashMap<String, HashMap<String, Integer>> countMap,
+                                    HashMap<String, HashMap<String, Double>> probMap) {
+
         Iterator<String> iter = countMap.keySet().iterator();
         Iterator<String> innerIter;
         String wordBefore;
@@ -221,12 +292,14 @@ public class LanguageModel {
             wordsAfter = countMap.get(wordBefore);
 
             innerIter = wordsAfter.keySet().iterator();
+            // calculate the total number of times wordBefore has been seen
             while(innerIter.hasNext()) {
                 wordAft = innerIter.next();
                 totalOccurences += wordsAfter.get(wordAft);
             }
 
             innerIter = wordsAfter.keySet().iterator();
+            // calculate the probability of wordAft being seen after wordBefore
             while(innerIter.hasNext()) {
                 wordAft = innerIter.next();
                 currOccurences = wordsAfter.get(wordAft);
