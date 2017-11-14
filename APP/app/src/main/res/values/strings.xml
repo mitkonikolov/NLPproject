@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NLP App</string>
+    <string name="edit_message">Enter a url to a picture</string>
+    <string name="button_send">Send</string>
+</resources>
