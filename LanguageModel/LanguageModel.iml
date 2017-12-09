@@ -9,5 +9,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.bluecatcode.junit:junit-4.12-extended:1.1.0" level="application" />
+    <orderEntry type="library" name="com.bluecatcode.junit:junit-4.12-extended:1.1.01" level="application" />
+    <orderEntry type="library" name="stanford-parser-full-2015-01-30" level="project" />
   </component>
 </module>

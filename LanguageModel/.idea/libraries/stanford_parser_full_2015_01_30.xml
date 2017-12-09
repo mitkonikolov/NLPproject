@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="stanford-parser-full-2015-01-30">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../Semanting Parsing/stanford-parser-full-2015-01-30" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../Semanting Parsing/stanford-parser-full-2015-01-30" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../Semanting Parsing/stanford-parser-full-2015-01-30" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../Semanting Parsing/stanford-parser-full-2015-01-30" recursive="false" type="SOURCES" />
+  </library>
+</component>
