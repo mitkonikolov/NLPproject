@@ -40,7 +40,11 @@ class Parser {
 
     public static void main(String[] args) {
         List<String> infoToLookFor = new ArrayList<>();
-        String str = "Is this my rEd shirt?";
+        /*
+        questions that can be identified:
+        is this a red shirt?
+         */
+        String str = "What is the information presented here?";
         str = str.toLowerCase();
         Parser parser = new Parser();
         Tree tree = parser.parse(str);
@@ -62,13 +66,49 @@ class Parser {
                 System.out.println(leaf.label().value() + "-" +
                         parent.label().value() + " ");
             }
-            // store any NN or JJ if question starts with is
-            else if(questionWord.equals("is")) {
+            // if the requested started with is/are, get all verbs and nouns
+            // and use them in order to know how to analyze the result of the
+            // picture and generate a response
+            else if(questionWord.equals("is") || questionWord.equals("are")) {
                 if(parent.label().value().equals("NN") ||
                         parent.label().value().equals("JJ")) {
                     infoToLookFor.add(leaf.label().value());
                 }
             }
+            else if(questionWord.equals("what")) {
+                if(parent.label().value().equals("VBZ") ||
+                        parent.label().value().equals("VBN") ||
+                        parent.label().value().equals("VB")) {
+                    infoToLookFor.add(leaf.label().value());
+                }
+            }
+        }
+
+        // choose queryType
+        int queryType;
+        // it needs to be checked if something is on the picture
+        if(questionWord.equals("is") || questionWord.equals("are")) {
+            queryType = 1;
+        }
+/*        // the color of something needs to be identified
+        else if(questionWord.equals("what") &&
+                infoToLookFor.contains("is") &&
+                infoToLookFor.contains("color")) {
+            queryType = 3;
+        }*/
+        // handwritten text needs to be read
+        else if(questionWord.equals("what") &&
+                ((infoToLookFor.contains("is") && infoToLookFor.contains("written")) ||
+                        (infoToLookFor.contains("is") && infoToLookFor.contains("said")) ||
+                        (infoToLookFor.contains("is") && infoToLookFor.contains("shown")) ||
+                        (infoToLookFor.contains("is") && infoToLookFor.contains("information")) ||
+                        (infoToLookFor.contains("does") && infoToLookFor.contains("say")))) {
+            queryType = 2;
+        }
+        // handwritten text needs to be read
+        else if(questionWord.equals("what") &&
+                ((infoToLookFor.contains("is") && infoToLookFor.contains("printed")))) {
+            queryType = 3;
         }
 
     }
